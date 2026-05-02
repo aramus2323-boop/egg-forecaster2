@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: egg-forecaster-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - egg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    image: node:18-alpine
+    container_name: egg-forecaster-web
+    working_dir: /app/frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    command: >
+      sh -c "npm install && npm run dev"
+    networks:
+      - egg-network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  egg-network:
+    driver: bridge
