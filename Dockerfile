@@ -1,33 +1,27 @@
-# Use Python 3.11 slim image
-FROM python:3.11-slim
+# Build stage
+FROM node:18-alpine as builder
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+COPY frontend/package*.json ./
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+RUN npm ci
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY frontend .
 
-# Copy application code
-COPY egg_forecaster.py .
-COPY api.py .
-COPY egg_prices.csv .
-COPY cpi_data.csv* .
-COPY production_data.csv* .
+RUN npm run build
 
-# Expose port
-EXPOSE 8000
+# Production stage
+FROM node:18-alpine
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+WORKDIR /app
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Install static file server
+RUN npm install -g serve
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+# Serve the built React app
+CMD ["serve", "-s", "dist", "-l", "3000"]

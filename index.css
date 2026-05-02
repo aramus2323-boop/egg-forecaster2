@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-100;
+  }
+  
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200;
+  }
+  
+  .metric {
+    @apply flex flex-col gap-1;
+  }
+  
+  .metric-value {
+    @apply text-2xl font-bold text-secondary;
+  }
+  
+  .metric-label {
+    @apply text-sm text-gray-600;
+  }
+}
+
+* {
+  scroll-behavior: smooth;
+}
